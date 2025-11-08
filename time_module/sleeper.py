@@ -26,7 +26,6 @@ def countdown(timer: int):
         print(f"あと{timer - i}秒", end="\r")
 
 
-@dataclass
 class WaitTry:
     """
     フラグが立つまで待機
@@ -45,14 +44,9 @@ class WaitTry:
 
     """
 
-    sec: int | float | None = None
-    count: int | None = None
-
-    def __post_init__(self):
-        if not self.sec is None:
-            raise TypeError
-        if not self.count is None:
-            raise TypeError
+    def __init__(self):
+        self.sec: int | float | None = None
+        self.count: int | None = None
 
     def wait_setting(self, wait_time: int | float, sec: int | float | None = None):
         if sec is None:

@@ -4,6 +4,8 @@ import time
 
 
 def measure_time(func):
+    """時間計測デコレータ"""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()  # 実行開始時間を記録
