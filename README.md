@@ -38,7 +38,7 @@ from time_module import measure_time, randsleep
 # 関数の実行時間を計測するデコレータ
 @measure_time
 def func():
-    randsleep(4)
+    randsleep(4, 9)
 ```
 
 ### 実装予定
