@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 import time
 import random
+from typing import Generator
+
+from time_module import MutableWaitTime, MutableWaitTimeAttrClass
 
 
 def randsleep(start: int | float, end: int | float):
@@ -10,8 +13,8 @@ def randsleep(start: int | float, end: int | float):
         assert (isinstance(end, int) or isinstance(end, float)) and end >= 0
     except AssertionError:
         raise ValueError("start, endは0以上の数でお願いします。")
-    ru = random.uniform(start, end)
-    time.sleep(ru)
+    sleep_count = random.uniform(start, end)
+    time.sleep(sleep_count)
 
 
 def countdown(timer: int):
@@ -26,51 +29,41 @@ def countdown(timer: int):
         print(f"あと{timer - i}秒", end="\r")
 
 
-class WaitTry:
+class WaitTry(MutableWaitTimeAttrClass):
     """
     フラグが立つまで待機
     Args:
+        wait_time (int | float): 待機時間の最大値
         sec (int | float): 待機中の更新間隔
-        count (int): 更新回数
     Usage:
-        wait_try = WaitTry()
-        wait_try.decide_count(10) # 10秒待機
-
-        for _ in range(wait_try.count) # ここyeildでrangeいらなそう
-            # フラグが立ったら抜ける
-            if is_flag():
-                break
-            wait_try.sleep() # ここyeildで更に省略できそう
-
+        for _ in WaitTry(10):
+            pass
     """
 
-    def __init__(self):
-        self.sec: int | float | None = None
-        self.count: int | None = None
+    def __init__(self, wait_time: int | float | MutableWaitTime, sec: int | float | None = None):
+        self.wait_time = wait_time
+        self._set_sec(sec)
+        self._set_count()
 
-    def wait_setting(self, wait_time: int | float, sec: int | float | None = None):
+    def _set_sec(self, sec: int | float | None = None):
         if sec is None:
             # デフォルト0.1秒
-            self.sec = 0.1
-        else:
-            self.sec = sec
-        self._validation(wait_time)
-        self.count = int(wait_time / self.sec)
+            sec = 0.1
+        # バリデーション
+        if not isinstance(sec, int | float):
+            raise TypeError(f"wait_timeはintかfloatかNoneだけです。入力された型: {type(sec)}")
+        if sec <= 0:
+            raise ValueError(f"secは0以上です。入力された値: {sec}")
+        self.sec = sec
+
+    def _set_count(self):
+        self.count = int(self.wait_time / self.sec)
         # 最低1回
         if self.count <= 0:
             self.count = 1
 
-    def _validation(self, wait_time: int | float):
-        if not isinstance(self.sec, int | float):
-            raise TypeError
-        if self.sec <= 0:
-            raise ValueError
-        if not isinstance(wait_time, int | float):
-            raise TypeError
-        if wait_time < 0:
-            raise ValueError
-
-    def __iter__(self):
+    def __iter__(self) -> Generator[int, None, None]:
+        """for文で回せるイテレータ。戻り値として現在の総待機時間を返す"""
         total_wait_time = 0
         for _ in range(self.count):
             time.sleep(self.sec)
