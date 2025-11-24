@@ -18,15 +18,27 @@ class MutableWaitTime:
 class MutableWaitTimeAttrClass(ABC):
     """ミュータブルなwait_timeを持つクラス"""
 
-    def branch_wait_time(self, wait_time: int | float | None = None):
+    def _branch_wait_time(self, wait_time: int | float | None = None):
         """新規MutableWaitTimeを作り、他MutableWaitTimeAttrClassとのつながりを断つ"""
         if wait_time is None:
             try:
-                self._wait_time = MutableWaitTime(self._wait_time.wait_time)
+                self._wait_time = MutableWaitTime(self.wait_time)
                 return
             except AttributeError:
                 raise AttributeError("既存のwait_timeがない状態でNoneだと新規MutableWaitTimeが作れません。")
         self._wait_time = MutableWaitTime(wait_time)
+
+    def _get_temp_wait_time(self, wait_time: int | float | None = None) -> int | float:
+        """一時的なwait_timeを取得するバリデーションありのメソッド"""
+        if wait_time is None:
+            try:
+                wait_time = self.wait_time
+                return wait_time
+            except AttributeError:
+                raise AttributeError("既存のwait_timeがない状態でNoneだとwait_timeが作れません。")
+        # post_initでint | floatのバリデーションをするだけ
+        MutableWaitTime(wait_time)
+        return wait_time
 
     @property
     def wait_time(self) -> int | float:
