@@ -53,8 +53,8 @@ class MutableWaitTimeAttrClass(ABC):
             self._wait_time = wait_time
             return
         # 入力されたwait_timeをミュータブルのまま適用させる
-        try:
+        if hasattr(self, "_wait_time"):
             self._wait_time.wait_time = wait_time
+            return
         # 定義されていない場合はMutableWaitTimeオブジェクトを定義
-        except AttributeError:
-            self._wait_time = MutableWaitTime(wait_time)
+        self._wait_time = MutableWaitTime(wait_time)
